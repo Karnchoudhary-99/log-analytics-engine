@@ -2,20 +2,55 @@
 
 A log analytics engine in Scala: parse log lines into structured events,
 aggregate them over time windows, and query the results — built for
-operational log analysis without a heavyweight stack.
+operational log analysis without a heavyweight stack. Stdlib only for parsing
+(no JSON dependency); ScalaTest for tests.
 
 ## Roadmap
 
 - [x] Project scaffold (sbt, ScalaTest, CI, README)
-- [ ] Log parsing (common formats, structured events)
-- [ ] Aggregation + time-window queries
+- [x] Log parsing (common formats, structured events)
+- [x] Aggregation + time-window queries
 - [ ] Self-review checklist, then public
+
+## Formats
+
+One file can mix all three — `MultiFormatParser` dispatches per line:
+
+- **Plain:** `2026-10-27T18:00:00Z INFO [web] User login succeeded user=alice`
+  (ISO, `yyyy-MM-dd HH:mm:ss`, or epoch timestamps; `key=value` pairs become fields)
+- **Apache combined:** `127.0.0.1 - alice [27/Oct/2026:18:00:00 +0000] "GET / HTTP/1.1" 200 1234 "-" "curl/8.0"`
+  (status-derived severity: 5xx ERROR, 4xx WARN, else INFO)
+- **JSON:** `{"timestamp":"...","level":"ERROR","service":"db","message":"...","pool":"main"}`
+  (known keys mapped, everything else kept as fields)
 
 ## Quick start
 
 ```sh
 sbt test
-sbt "runMain loganalytics.Main"
+sbt "runMain loganalytics.Demo"
+sbt "runMain loganalytics.Main parse examples/sample.log"
+sbt "runMain loganalytics.Main aggregate examples/sample.log --window 1h"
+sbt "runMain loganalytics.Main query examples/sample.log --level ERROR"
+sbt "runMain loganalytics.Main query examples/sample.log --source web --contains login"
+```
+
+Query filters compose (AND): `--level`, `--source`, `--from`, `--to`,
+`--contains`, `--field key=value`. Aggregation buckets events into tumbling
+windows (`--window 15m|1h|1d`), reporting per-window totals, per-level and
+per-source counts, and error rates.
+
+## Sample output
+
+```
+Parsed 7 events, 0 failures (success rate 100.0%)
+Error rate: 28.6%
+By level:
+  INFO: 3
+  WARN: 2
+  ERROR: 2
+Windows (5 min):
+  2026-10-27T18:00:00Z total=6 errors=1
+  2026-10-27T18:05:00Z total=1 errors=1
 ```
 
 ## License
