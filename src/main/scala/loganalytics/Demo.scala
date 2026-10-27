@@ -23,5 +23,9 @@ object Demo {
     print(AlertReport.render(AlertEvaluator.evaluateDefault(report.events)))
     println("First event as JSON:")
     report.events.headOption.foreach(e => println("  " + JsonExport.eventJson(e)))
+    println("Error-rate trend (5 min windows) and bursts:")
+    val window5 = TimeWindow(java.time.Duration.ofMinutes(5))
+    print(TrendReport.renderTrend(Trend.series(report.events, window5)))
+    print(TrendReport.renderBursts(BurstDetector.detect(Aggregation.byWindow(report.events, window5))))
   }
 }

@@ -24,6 +24,12 @@ object Report {
     sb.toString
   }
 
+  /** Full report plus the error-rate trend and burst sections. */
+  def renderWithTrend(report: ParseReport, window: TimeWindow): String =
+    render(report, window) +
+      TrendReport.renderTrend(Trend.series(report.events, window)) +
+      TrendReport.renderBursts(BurstDetector.detect(Aggregation.byWindow(report.events, window)))
+
   def renderEvent(e: LogEvent): String =
     s"${e.timestamp} ${e.level} [${e.source.getOrElse("-")}] ${e.message}" +
       (if (e.fields.isEmpty) "" else " " + e.fields.map { case (k, v) => s"$k=$v" }.mkString(" "))

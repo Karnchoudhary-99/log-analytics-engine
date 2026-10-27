@@ -1,0 +1,18 @@
+2026-10-27T18:00:00Z INFO [web] Request ok user=alice
+2026-10-27T18:00:30Z INFO [web] Request ok user=bob
+2026-10-27T18:05:00Z INFO [web] Request ok user=alice
+2026-10-27T18:05:30Z INFO [web] Request ok user=bob
+2026-10-27T18:10:00Z ERROR [web] Request failed user=alice status=500
+2026-10-27T18:10:05Z ERROR [web] Request failed user=bob status=500
+2026-10-27T18:10:10Z ERROR [web] Request failed user=alice status=500
+2026-10-27T18:10:15Z ERROR [web] Request failed user=bob status=500
+2026-10-27T18:10:20Z ERROR [web] Request failed user=alice status=500
+2026-10-27T18:10:25Z ERROR [web] Request failed user=bob status=500
+2026-10-27T18:10:30Z ERROR [web] Request failed user=alice status=500
+2026-10-27T18:10:35Z ERROR [web] Request failed user=bob status=500
+2026-10-27T18:10:40Z ERROR [web] Request failed user=alice status=500
+2026-10-27T18:10:45Z ERROR [web] Request failed user=bob status=500
+2026-10-27T18:10:50Z ERROR [web] Request failed user=alice status=500
+2026-10-27T18:10:55Z ERROR [web] Request failed user=bob status=500
+2026-10-27T18:15:00Z INFO [web] Request ok user=alice
+2026-10-27T18:15:30Z INFO [web] Request ok user=bob
