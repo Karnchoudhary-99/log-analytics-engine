@@ -1,28 +1,31 @@
 package loganalytics
 
 import java.time.Instant
-import scala.io.Source
-import scala.util.Using
 
 /** CLI: parse | aggregate | query | alerts over a log file (mixed formats). */
 object Main {
   private val usage =
     """Usage:
-      |  log-analytics parse <file> [--format text|json|csv]
-      |  log-analytics aggregate <file> [--window 5m] [--format text|json|csv]
-      |  log-analytics query <file> [--level ERROR] [--source web]
+      |  log-analytics parse <file> [<file>...] [--format text|json|csv]
+      |  log-analytics aggregate <file> [<file>...] [--window 5m] [--format text|json|csv]
+      |  log-analytics query <file> [<file>...] [--level ERROR] [--source web]
       |      [--from 2026-10-27T00:00:00Z] [--to 2026-10-28T00:00:00Z]
       |      [--contains text] [--field key=value] [--format text|json|csv]
       |  log-analytics alerts <file> [--window 5m]
       |      [--alert name:rate=0.5,count=3,window=5m]
+      |  log-analytics trend <file> [--window 5m] [--burst-ratio 3.0]
       |""".stripMargin
 
   def main(args: Array[String]): Unit = {
     if (args.length < 2) { println(usage); sys.exit(2) }
-    val (command, file) = (args(0), args(1))
-    val opts = parseOpts(args.drop(2))
-    val text = Using(Source.fromFile(file))(_.mkString).getOrElse {
-      System.err.println(s"cannot read file: $file"); sys.exit(1)
+    val command = args(0)
+    val rest = args.drop(1)
+    val files = rest.takeWhile(!_.startsWith("--"))
+    if (files.isEmpty) { println(usage); sys.exit(2) }
+    val opts = parseOpts(rest.drop(files.size))
+    val text = InputFiles.readAll(files) match {
+      case Right(t)  => t
+      case Left(bad) => System.err.println(s"cannot read file: $bad"); sys.exit(1)
     }
     val report = MultiFormatParser.parseText(text)
     val format = opts.getOrElse("format", "text")
@@ -51,6 +54,13 @@ object Main {
           case None       => System.err.println(s"bad alert spec: ${opts("alert")}"); sys.exit(1)
         }
         print(AlertReport.render(AlertEvaluator.evaluate(rules, report.events)))
+      case "trend" =>
+        val window = TimeWindow.parse(opts.getOrElse("window", "5m")).getOrElse {
+          System.err.println(s"bad window: ${opts("window")}"); sys.exit(1)
+        }
+        print(TrendReport.renderTrend(Trend.series(report.events, window)))
+        val ratio = opts.get("burst-ratio").flatMap(_.toDoubleOption).getOrElse(3.0)
+        print(TrendReport.renderBursts(BurstDetector.detect(Aggregation.byWindow(report.events, window), minRatio = ratio)))
       case "query" =>
         val query = LogQuery(
           minLevel = opts.get("level").flatMap(LogLevel.parse),
