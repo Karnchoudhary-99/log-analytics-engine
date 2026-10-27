@@ -11,6 +11,7 @@ operational log analysis without a heavyweight stack. Stdlib only for parsing
 - [x] Log parsing (common formats, structured events)
 - [x] Aggregation + time-window queries
 - [x] Alerting (threshold rules over windows) + JSON/CSV export
+- [x] Error-rate trends, burst detection, multi-file input
 - [ ] Self-review checklist, then public
 
 ## Formats
@@ -69,6 +70,22 @@ Alert specs are `name:rate=0.5,count=3,window=5m` (rate and count are
 optional, at least one required; a window fires when either threshold is
 met). Severity bands: `critical` at >= 50% error rate or >= 20 errors,
 `warning` at >= 25% or >= 5 errors, otherwise `info`.
+
+## Trends, bursts, and multi-file input
+
+```sh
+sbt "runMain loganalytics.Main trend examples/trend.log"
+# Error-rate trend: rising (slope 0.250 per window); no bursts
+sbt "runMain loganalytics.Main trend examples/burst.log"
+# ... plus: 1 burst(s): 18:10 total=12 baseline=2.0 ratio=6.0x
+sbt "runMain loganalytics.Main trend examples/burst.log --burst-ratio 2.0"
+sbt "runMain loganalytics.Main parse examples/sample.log examples/alerts.log"
+```
+
+Every command accepts several files, read as one stream. Trend slope is
+the least-squares slope of per-window error rates; a window is a burst
+when its count is at least `--burst-ratio` (default 3.0) times the mean of
+the other windows and at least 5 events.
 
 ## License
 
