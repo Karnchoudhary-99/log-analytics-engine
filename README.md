@@ -12,7 +12,7 @@ operational log analysis without a heavyweight stack. Stdlib only for parsing
 - [x] Aggregation + time-window queries
 - [x] Alerting (threshold rules over windows) + JSON/CSV export
 - [x] Error-rate trends, burst detection, multi-file input
-- [ ] Self-review checklist, then public
+- [x] Self-review checklist passed (fresh clone: 26 tests green, demos run, no secrets/TODOs), then public
 
 ## Formats
 
