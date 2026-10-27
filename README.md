@@ -10,6 +10,7 @@ operational log analysis without a heavyweight stack. Stdlib only for parsing
 - [x] Project scaffold (sbt, ScalaTest, CI, README)
 - [x] Log parsing (common formats, structured events)
 - [x] Aggregation + time-window queries
+- [x] Alerting (threshold rules over windows) + JSON/CSV export
 - [ ] Self-review checklist, then public
 
 ## Formats
@@ -52,6 +53,22 @@ Windows (5 min):
   2026-10-27T18:00:00Z total=6 errors=1
   2026-10-27T18:05:00Z total=1 errors=1
 ```
+
+## Alerts and export
+
+```sh
+sbt "runMain loganalytics.Main alerts examples/alerts.log"
+# 1 alert(s): the 18:05 window is 3/4 errors (75%), tripping the default rule
+sbt "runMain loganalytics.Main alerts examples/alerts.log --alert sev:rate=0.5,count=2"
+sbt "runMain loganalytics.Main parse examples/sample.log --format json"
+sbt "runMain loganalytics.Main aggregate examples/sample.log --window 1h --format csv"
+sbt "runMain loganalytics.Main query examples/sample.log --level ERROR --format json"
+```
+
+Alert specs are `name:rate=0.5,count=3,window=5m` (rate and count are
+optional, at least one required; a window fires when either threshold is
+met). Severity bands: `critical` at >= 50% error rate or >= 20 errors,
+`warning` at >= 25% or >= 5 errors, otherwise `info`.
 
 ## License
 

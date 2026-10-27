@@ -1,0 +1,7 @@
+2026-10-27T18:00:00Z INFO [web] Server started port=8080
+2026-10-27T18:00:10Z INFO [web] User login succeeded user=alice
+2026-10-27T18:00:20Z INFO [web] Request ok user=bob
+2026-10-27T18:05:00Z ERROR [web] Request failed user=alice status=500
+2026-10-27T18:05:10Z ERROR [db] Connection pool exhausted pool=main
+2026-10-27T18:05:20Z ERROR [web] Request failed user=bob status=500
+2026-10-27T18:06:00Z INFO [web] Request ok user=alice
