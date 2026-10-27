@@ -19,5 +19,9 @@ object Demo {
     println(Report.render(report, TimeWindow(Duration.ofMinutes(5))))
     println("Errors only:")
     LogQuery.errorsOnly(report.events).foreach(e => println("  " + Report.renderEvent(e)))
+    println("Alerts (default rule: error rate >= 50% in a 5 min window):")
+    print(AlertReport.render(AlertEvaluator.evaluateDefault(report.events)))
+    println("First event as JSON:")
+    report.events.headOption.foreach(e => println("  " + JsonExport.eventJson(e)))
   }
 }
